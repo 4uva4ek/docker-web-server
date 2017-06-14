@@ -1,0 +1,23 @@
+version: '2'
+services:
+  db:
+    build: ./docker-compose-config/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: agroxydev
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+    volumes:
+      - ./mysql:/var/lib/mysql
+  php:
+    build: ./docker-compose-config/php
+    ports:
+      - '80:80'
+      - '433:433'
+    expose:
+      - "9000"
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      - db
+
