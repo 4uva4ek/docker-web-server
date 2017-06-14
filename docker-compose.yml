@@ -9,6 +9,10 @@ services:
       MYSQL_PASSWORD: root
     volumes:
       - ./mysql:/var/lib/mysql
+    expose:
+      - "3306"
+    ports:
+      - 3307:3306
   php:
     build: ./docker-compose-config/php
     ports:
@@ -22,4 +26,15 @@ services:
       - ./docker-compose-config/emails:/var/www/mails
     depends_on:
       - db
-
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    environment:
+      - PMA_ARBITRARY=1
+    restart: always
+    ports:
+      - 8080:80
+    volumes:
+      - /sessions
+    depends_on:
+      - db
