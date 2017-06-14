@@ -1,5 +1,5 @@
 #!/bin/sh
-prefix="/var/www/mails"
+prefix="/var/www/html/emails"
 date=`date \+\%Y-\%m-\%d-\%H\%M\%S`
 
 name="$prefix/$date.eml"

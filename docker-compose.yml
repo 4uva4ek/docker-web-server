@@ -18,7 +18,7 @@ services:
       - "9000"
     volumes:
       - ./:/var/www/html
-      - ./docker-compose-config/logs:/var/log/apache2
+      - ./logs:/var/log/apache2
       - ./docker-compose-config/emails:/var/www/mails
     depends_on:
       - db
