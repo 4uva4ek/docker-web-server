@@ -1,6 +1,7 @@
 FROM 	php:7.0-apache
 
 COPY 	php.ini /usr/local/etc/php/
+COPY    sendmail.sh /usr/local/etc/php/
 
 RUN 	pecl install xdebug-2.5.0  \
     	&& docker-php-ext-enable xdebug \
@@ -15,6 +16,7 @@ RUN 	pecl install xdebug-2.5.0  \
     	&& docker-php-source extract \
     	&& docker-php-source delete \
     && set -x \
+    && chmod 777 /usr/local/etc/php/sendmail.sh && chmod +x /usr/local/etc/php/sendmail.sh \
     && apt-get update && apt-get install -y --no-install-recommends unzip libssl-dev libpcre3 libpcre3-dev \
     && cd /tmp \
     && curl -sSL -o php7.zip https://github.com/websupport-sk/pecl-memcache/archive/php7.zip \
