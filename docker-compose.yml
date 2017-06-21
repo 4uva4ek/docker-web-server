@@ -19,7 +19,7 @@ services:
 
 
   php:
-    image: 4uva4elo/apache-php7
+    image: 4uva4elo/php7.0-apache
     ports:
       - '80:80'
     expose:
@@ -30,12 +30,12 @@ services:
       - ./logs:/var/log/apache2
     depends_on:
       - db
+      - memcached
     restart: always
 
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
-    container_name: phpmyadmin
     environment:
       - PMA_ARBITRARY=1
     restart: always
@@ -45,4 +45,13 @@ services:
       - /sessions
     depends_on:
       - db
+    restart: always
+
+
+  memcached:
+    image: memcached
+    ports:
+      - "11211:11211"
+    mem_limit: 1g
+    command: memcached -m 1024m
     restart: always
