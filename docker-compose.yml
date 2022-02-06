@@ -1,57 +1,93 @@
-version: '2'
+version: '3.9'
 services:
-
-
   db:
-    image: mariadb
+    build:
+      dockerfile: ./.docker/mariadb/Dockerfile
+      context: .
+    image: 'mariadb:latest'
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: agroxydev
-      MYSQL_USER: root
-      MYSQL_PASSWORD: root
+      MYSQL_DATABASE: evraz
+      MYSQL_USER: evraz0912
+      MYSQL_PASSWORD: evraz0912
     volumes:
-      - ./mysql:/var/lib/mysql
+      - 'mariadb-value:/var/lib/mysql:z'
+      - './:/var/www/html'
+      - '/home/dev/Work/DB:/db:ro'
     expose:
-      - "3306"
+      - '3306'
     ports:
-      - 3307:3306
+      - '3306:3306'
+    networks:
+      - app-network
+      - network-local
+  redis:
+    image: redis
     restart: always
-
-
+    expose:
+      - '6379'
+    networks:
+      - app-network
   php:
-    image: 4uva4elo/php7.0-apache
+    image: 4uva4elo/php7.4-fpm
+    build:
+      context: .
+      dockerfile: .docker/php/Dockerfile
+    #environment:
+    #  XDEBUG_CONFIG: 'client_host=host.docker.internal discover_client_host=0 '
+    expose:
+      - '9000'
+      - '9003'
+    volumes:
+      - './:/var/www/html'
+      - './logs:/var/log/nginx'
+      - './.docker/php/php.ini:/usr/local/etc/php/php.ini'
+      - './.docker/php/docker-php-ext-xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini'
+    networks:
+      - app-network
+  web:
+    image: 'nginx:alpine'
     ports:
       - '80:80'
-    expose:
-    # ifconfig lo0 alias 10.254.254.254 (alias for mac os lan)
-      - "9000"
     volumes:
-      - ./:/var/www/html
-      - ./logs:/var/log/apache2
-    depends_on:
-      - db
-      - memcached
-    restart: always
-
-
+      - './:/var/www/html'
+      - './.docker/nginx/site.conf:/etc/nginx/conf.d/default.conf'
+      - './logs:/var/log/nginx'
+    networks:
+      - app-network
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     environment:
       - PMA_ARBITRARY=1
-    restart: always
     ports:
-      - 8080:80
+      - '82:80'
     volumes:
       - /sessions
-    depends_on:
-      - db
-    restart: always
-
-
-  memcached:
-    image: memcached
+    networks:
+      - app-network
+  beanstalk-console:
+    image: agaveapi/beanstalkd-console
     ports:
-      - "11211:11211"
-    mem_limit: 1g
-    command: memcached -m 1024m
-    restart: always
+      - "83:80"
+    networks:
+      - app-network
+      - network-local
+#  beanstalkd:
+#    image: beanstalkd
+#    build:
+#      context: .
+#      dockerfile: .docker/beanstalkd/Dockerfile
+#    expose:
+#      - 11300
+#    networks:
+#      - app-network
+#      - network-local
+
+networks:
+  app-network:
+    driver: bridge
+  network-local: null
+volumes:
+  mariadb-value:
+    driver: local
+  beanstalkd_data: null
