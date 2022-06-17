@@ -11,9 +11,18 @@ services:
       MYSQL_USER: evraz0912
       MYSQL_PASSWORD: evraz0912
     volumes:
-      - 'mariadb-value:/var/lib/mysql:z'
-      - './:/var/www/html'
-      - '/home/dev/Work/DB:/db:ro'
+      - type: volume
+        source: mariadb-value
+        target: /var/lib/mysql:z
+      - type: bind
+        source: ./
+        target: /var/www/html
+      - type: bind
+        source: /home/dev/Work/DB
+        target: /db
+#      - type: bind
+#        source: F:\\DB
+#        target: /db
     expose:
       - '3306'
     ports:
@@ -33,16 +42,23 @@ services:
     build:
       context: .
       dockerfile: .docker/php/Dockerfile
-    #environment:
-    #  XDEBUG_CONFIG: 'client_host=host.docker.internal discover_client_host=0 '
     expose:
       - '9000'
       - '9003'
+      - "11300"
     volumes:
-      - './:/var/www/html'
-      - './logs:/var/log/nginx'
-      - './.docker/php/php.ini:/usr/local/etc/php/php.ini'
-      - './.docker/php/docker-php-ext-xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini'
+      - type: bind
+        source: ./
+        target: /var/www/html
+      - type: bind
+        source: ./logs
+        target: /var/log/php
+      - type: bind
+        source: ./.docker/php/php.ini
+        target: /usr/local/etc/php/php.ini
+      - type: bind
+        source: ./.docker/php/docker-php-ext-xdebug.ini
+        target: /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
     networks:
       - app-network
   web:
@@ -50,9 +66,15 @@ services:
     ports:
       - '80:80'
     volumes:
-      - './:/var/www/html'
-      - './.docker/nginx/site.conf:/etc/nginx/conf.d/default.conf'
-      - './logs:/var/log/nginx'
+      - type: bind
+        source: ./
+        target: /var/www/html
+      - type: bind
+        source: ./logs
+        target: /var/log/nginx
+      - type: bind
+        source: ./.docker/nginx/site.conf
+        target: /etc/nginx/conf.d/default.conf
     networks:
       - app-network
   phpmyadmin:
@@ -65,24 +87,13 @@ services:
       - /sessions
     networks:
       - app-network
-  beanstalk-console:
-    image: agaveapi/beanstalkd-console
-    ports:
-      - "83:80"
-    networks:
-      - app-network
-      - network-local
-#  beanstalkd:
-#    image: beanstalkd
-#    build:
-#      context: .
-#      dockerfile: .docker/beanstalkd/Dockerfile
-#    expose:
-#      - 11300
+#  beanstalk-console:
+#    image: agaveapi/beanstalkd-console
+#    ports:
+#      - '83:80'
 #    networks:
 #      - app-network
-#      - network-local
-
+#    #  - network-local
 networks:
   app-network:
     driver: bridge
